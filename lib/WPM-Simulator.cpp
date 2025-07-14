@@ -32,14 +32,28 @@ int countWordsInString(std::string const& str)
     return std::distance(std::istream_iterator<std::string>(stream), std::istream_iterator<std::string>());
 }
 
+std::string fetchClipboardContents() {
+    std::string clipboardTextString = "";
+    if (OpenClipboard(NULL)) {
+        HANDLE hData = GetClipboardData(CF_TEXT);
+        if (hData != NULL) {
+            char* clipboardText = static_cast<char*>(GlobalLock(hData));
+            if (clipboardText) {
+                clipboardTextString = clipboardText;
+                GlobalUnlock(hData);
+            }
+        }
+        CloseClipboard();
+    }
+	return clipboardTextString;
+}
 int main(int argc, char* argv[]) {
     std::string appName = (argc > 0) ? argv[0] : "key_sim_tool";
 
     // Default values
-    int initialDelayMs = {5000
-};  // 5 seconds
+    int initialDelayMs = {5000};    // 5 seconds
     int keyPressDelayMs = { 20 };   // 20 ms per key
-	int wpm = { 50 };           // Default WPM
+	int wpm = { 50 };               // Default WPM
     std::string textToType = "";
 
     // Parse command-line arguments
@@ -102,9 +116,15 @@ int main(int argc, char* argv[]) {
     }
 
     if (textToType.empty()) {
-        std::cerr << "Error: No text to type provided." << std::endl;
-        printUsage(appName);
-        return 1;
+        textToType = fetchClipboardContents();
+        if (textToType.empty()) {
+            std::cerr << "Error: No text provided and clipboard is empty." << std::endl;
+            printUsage(appName);
+            return 1;
+        }
+        else {
+            std::cout << "No text to type provided: Using Clipboard contents" << std::endl;
+        }
     }
 
 	keyPressDelayMs = countWordsInString(textToType) > 0 ? 60000 / (countWordsInString(textToType) * wpm) : 20;
@@ -120,12 +140,6 @@ int main(int argc, char* argv[]) {
     simulateTyping(textToType, keyPressDelayMs);
 
     std::cout << "Text typing simulation complete." << std::endl;
-
-    // Keep console open briefly if run directly without a debugger attached
-    if (IsDebuggerPresent() == 0) { // Check if debugger is attached
-        std::cout << "Press Enter to exit..." << std::endl;
-        std::cin.ignore();
-    }
 
     return 0;
 }
