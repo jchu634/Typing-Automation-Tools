@@ -1,10 +1,17 @@
-﻿#include <windows.h>
-#include <string>
-#include <thread>
-#include <chrono>
-#include <iostream>
+﻿#include <windows.h>      // Core Windows API functions
+#include <shellapi.h>     // For Shell_NotifyIcon and NOTIFYICONDATA (tray icon)
+#include <string>         // For std::string
+#include <thread>         // For std::this_thread::sleep_for
+#include <chrono>         // For std::chrono::milliseconds
+#include <iostream>       // For console output (can be removed for true background app)
+#include <sstream>        // For std::stringstream (word counting)
+#include <iterator>       // For std::istream_iterator (word counting)
+#include <algorithm>      // For std::distance (word counting)
+#include <stdexcept>      // For std::runtime_error (though not used in this version)
+
 #include "key_sim_lib.h";
-#include <stdexcept> // For std::runtime_error
+
+
 
 
 int countWordsInString(std::string const& str)
@@ -29,6 +36,7 @@ std::string fetchClipboardContents() {
 	return clipboardTextString;
 }
 int main(int argc, char* argv[]) {
+
 	/* Cannot use some hotkeys, as a subset may already be in use and interfer with the program.
     if (RegisterHotKey(NULL, 1, MOD_WIN | MOD_ALT | MOD_SHIFT, 0x56)) {
        std::cout << "Hotkey registered. Press Shift + Win + Alt + V" << std::endl;
