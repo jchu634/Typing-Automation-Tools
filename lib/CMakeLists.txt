@@ -23,7 +23,7 @@ add_executable (WPM-Simulator "WPM-Simulator.cpp" "WPM-Simulator.h")
 target_link_libraries(WPM-Simulator PRIVATE key_sim_lib)
 
 # Clipboard-Paster executable
-add_executable (Clipboard-Paster WIN32 "Clipboard-Paster.cpp" "Clipboard-Paster.h")
+add_executable (Clipboard-Paster WIN32 "Clipboard-Paster.cpp" "resources.rc")
 target_link_libraries(Clipboard-Paster PRIVATE key_sim_lib)
 
 # Set C++20 for all targets

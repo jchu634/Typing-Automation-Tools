@@ -1,0 +1,19 @@
+// resources.rc
+
+#include <windows.h>
+
+//IDD_SETTINGS DIALOGEX 0, 0, 220, 105
+101 DIALOGEX 0, 0, 220, 105
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Settings"
+FONT 8, "MS Shell Dlg"
+BEGIN
+
+LTEXT           "Initial Paste Delay (ms):", -1, 15, 15, 100, 10
+LTEXT           "Delay Between Keystrokes (ms):", -1, 15, 45, 120, 10
+//EDITTEXT        IDC_EDIT_INITIAL_DELAY, 145, 12, 60, 14, ES_AUTOHSCROLL | ES_NUMBER
+//EDITTEXT        IDC_EDIT_KEY_DELAY, 145, 42, 60, 14, ES_AUTOHSCROLL | ES_NUMBER
+
+DEFPUSHBUTTON   "OK", IDOK, 55, 80, 50, 14
+PUSHBUTTON      "Cancel", IDCANCEL, 115, 80, 50, 14
+END

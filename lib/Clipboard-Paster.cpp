@@ -8,39 +8,27 @@
 #include <iterator>       // For std::istream_iterator (word counting)
 #include <algorithm>      // For std::distance (word counting)
 #include <stdexcept>      // For std::runtime_error (though not used in this version)
-
-#include "key_sim_lib.h";
+#include "key_sim_lib.h"
+#include "resource.h"
 
 #define WM_MY_TRAY_MESSAGE WM_APP + 1
 
 // Global variables for the window and tray icon
+struct AppSettings {
+    int initialDelayMs = 1000; // 1 second
+    int keyPressDelayMs = 5;  // 20 ms
+};
+
 HWND g_hWnd;
 NOTIFYICONDATA g_nid;
+AppSettings g_settings; // Global settings instance
 
 // Forward declarations
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
-
-int countWordsInString(std::string const& str)
-{
-    std::stringstream stream(str);
-    return std::distance(std::istream_iterator<std::string>(stream), std::istream_iterator<std::string>());
-}
-
-std::string fetchClipboardContents() {
-    std::string clipboardTextString = " ";
-    if (OpenClipboard(NULL)) {
-        HANDLE hData = GetClipboardData(CF_TEXT);
-        if (hData != NULL) {
-            char* clipboardText = static_cast<char*>(GlobalLock(hData));
-            if (clipboardText) {
-                clipboardTextString = clipboardText;
-                GlobalUnlock(hData);
-            }
-        }
-        CloseClipboard();
-    }
-    return clipboardTextString;
-}
+INT_PTR CALLBACK SettingsDlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam);
+std::string fetchClipboardContents();
+int countWordsInString(std::string const& str);
+void ShowSettingsDialog(HWND hParent);
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
     // 1. Register a Window Class
@@ -51,8 +39,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     wc.lpfnWndProc = WindowProc;
     wc.hInstance = hInstance;
     wc.lpszClassName = CLASS_NAME;
-    wc.hCursor = LoadCursor(nullptr, IDC_ARROW); // Small invisible cursor
-    wc.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1); // No visible background
+    wc.hCursor = LoadCursor(nullptr, IDC_ARROW);    // Small invisible cursor
+    wc.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);  // No visible background
 
     RegisterClassEx(&wc);
 
@@ -87,7 +75,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
     if (!Shell_NotifyIcon(NIM_ADD, &g_nid)) {
         MessageBox(nullptr, "Failed to add icon to system tray!", "Error", MB_ICONERROR);
-        // You might want to handle this gracefully, maybe exit
+		// Exit if we can't add the icon
+        return 0;
     }
 
     if (RegisterHotKey(NULL, 1, MOD_WIN, 0x75)) {
@@ -98,10 +87,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         return 1;
     }
 
-    // Default values
-    int initialDelayMs = { 1000 };      // 1 seconds
-    int keyPressDelayMs = { 20 };       // 20 ms per key    
     std::string textToType = " ";
+
     // Message loop
     MSG msg = {};
     while (GetMessage(&msg, nullptr, 0, 0)) {
@@ -111,11 +98,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
             if (!textToType.empty()) {
 
                 std::cout << textToType << std::endl;
-                keyPressDelayMs = 5;
 
                 // Delay required: otherwise beginning of string is often clipped 
-                std::this_thread::sleep_for(std::chrono::milliseconds(initialDelayMs));
-                simulateTyping(textToType, keyPressDelayMs);
+                std::this_thread::sleep_for(std::chrono::milliseconds(g_settings.initialDelayMs));
+                simulateTyping(textToType, g_settings.keyPressDelayMs);
                 std::cout << "Text typed" << std::endl;
             }
         }
@@ -130,59 +116,113 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 }
 
 
-
 // 4. Handle Window Messages
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
     switch (uMsg) {
-    case WM_CREATE:
-        // Initialization here if needed
-        break;
-
-    case WM_MY_TRAY_MESSAGE:
-        switch (LOWORD(lParam)) {
-       
-        case WM_RBUTTONUP:
-            // Right-click on tray icon: e.g., show context menu
-        {
-            POINT pt;
-            GetCursorPos(&pt);
-
-            HMENU hMenu = CreatePopupMenu();
-            InsertMenu(hMenu, 0, MF_BYPOSITION | MF_STRING, 1, "Settings");
-            InsertMenu(hMenu, 1, MF_BYPOSITION | MF_STRING, 2, "Exit");
-
-            // Set the default menu item
-            SetMenuDefaultItem(hMenu, 1, FALSE);
-
-            // Bring the window to the foreground before showing the menu
-            // This is crucial for the menu to disappear when clicking elsewhere
-            SetForegroundWindow(hwnd);
-
-            UINT clicked = TrackPopupMenu(hMenu,
-                TPM_LEFTALIGN | TPM_BOTTOMALIGN | TPM_RETURNCMD | TPM_NONOTIFY,
-                pt.x, pt.y, 0, hwnd, nullptr);
-
-            DestroyMenu(hMenu);
-
-            switch (clicked) {
-            case 1:
-                MessageBox(hwnd, "Settings selected!", "Menu", MB_OK);
-                // Open settings dialog
-                break;
-            case 2:
-                // Post quit message to exit the application
-                PostQuitMessage(0);
-                break;
-            }
+        case WM_CREATE: {
+            // Initialization here if needed
+            break;
         }
-        break;
 
-    case WM_DESTROY:
-        PostQuitMessage(0);
-        break;
+        case WM_MY_TRAY_MESSAGE: {
+            switch (LOWORD(lParam)) {
+                // Right-click on tray icon: e.g., show context menu
+                case WM_RBUTTONUP: {
+                    POINT pt;
+                    GetCursorPos(&pt);
 
-    default:
-        return DefWindowProc(hwnd, uMsg, wParam, lParam);
+                    HMENU hMenu = CreatePopupMenu();
+
+                    // Menu IDs should be unique and non-zero
+                    InsertMenu(hMenu, 0, MF_BYPOSITION | MF_STRING, 1, "Settings");
+                    InsertMenu(hMenu, 1, MF_BYPOSITION | MF_STRING, 2, "Exit");
+
+                    SetMenuDefaultItem(hMenu, 2, FALSE);
+
+                    // Bring the window to the foreground before showing the menu
+                    // This is crucial for the menu to disappear when clicking elsewhere
+                    SetForegroundWindow(hwnd);
+
+                    UINT clicked = TrackPopupMenu(
+                        hMenu,
+                        TPM_LEFTALIGN | TPM_BOTTOMALIGN | TPM_RETURNCMD | TPM_NONOTIFY,
+                        pt.x, pt.y, 0, hwnd, nullptr);
+
+                    DestroyMenu(hMenu);
+
+                    switch (clicked) {
+                        case 1: { // Settings
+                            //MessageBox(hwnd, "Settings selected!", "Menu", MB_OK);
+                            ShowSettingsDialog(hwnd);
+                            break;
+                        }
+                        case 2: { // Exit
+                            PostQuitMessage(0);
+                            break;
+                        }
+                    }
+                    break; // Break from WM_RBUTTONUP
+                }
+            }
+            return 0;
+        }
+
+        case WM_DESTROY: {
+            PostQuitMessage(0);
+            break;
+        }
+        default: {
+            return DefWindowProc(hwnd, uMsg, wParam, lParam);
+        }
     }
     return 0;
+}
+
+INT_PTR CALLBACK SettingsDlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam) {
+    switch (message) {
+    case WM_INITDIALOG:
+        // Initialize controls here if needed
+        return TRUE;
+    case WM_COMMAND:
+        switch (LOWORD(wParam)) {
+        case IDOK:
+        case IDCANCEL:
+            EndDialog(hDlg, LOWORD(wParam));
+            return TRUE;
+        }
+        break;
+    }
+    return FALSE;
+}
+
+void ShowSettingsDialog(HWND hParent) {
+    DialogBoxParam(
+        GetModuleHandle(nullptr),
+        MAKEINTRESOURCE(101),
+        hParent,
+        SettingsDlgProc,
+        0
+    );
+}
+
+int countWordsInString(std::string const& str)
+{
+    std::stringstream stream(str);
+    return std::distance(std::istream_iterator<std::string>(stream), std::istream_iterator<std::string>());
+}
+
+std::string fetchClipboardContents() {
+    std::string clipboardTextString = " ";
+    if (OpenClipboard(NULL)) {
+        HANDLE hData = GetClipboardData(CF_TEXT);
+        if (hData != NULL) {
+            char* clipboardText = static_cast<char*>(GlobalLock(hData));
+            if (clipboardText) {
+                clipboardTextString = clipboardText;
+                GlobalUnlock(hData);
+            }
+        }
+        CloseClipboard();
+    }
+    return clipboardTextString;
 }
