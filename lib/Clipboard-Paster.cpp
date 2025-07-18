@@ -26,9 +26,10 @@ AppSettings g_settings; // Global settings instance
 // Forward declarations
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 INT_PTR CALLBACK SettingsDlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam);
+void ShowSettingsDialog(HWND hParent);
 std::string fetchClipboardContents();
 int countWordsInString(std::string const& str);
-void ShowSettingsDialog(HWND hParent);
+
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
     // 1. Register a Window Class
@@ -67,11 +68,11 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     // 3. Add to System Tray
     g_nid.cbSize = sizeof(NOTIFYICONDATA);
     g_nid.hWnd = g_hWnd;
-    g_nid.uID = 100; // Unique ID for our icon
+    g_nid.uID = 100;                                                    // Unique ID for our icon
     g_nid.uFlags = NIF_ICON | NIF_MESSAGE | NIF_TIP;
-    g_nid.hIcon = LoadIcon(nullptr, IDI_APPLICATION); // Replace with your app's icon
-    lstrcpy(g_nid.szTip, "Clipboard Paster"); // Tooltip text
-    g_nid.uCallbackMessage = WM_MY_TRAY_MESSAGE; // Custom message for tray interactions
+    g_nid.hIcon = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_TRAYICON));   // Use custom icon
+    lstrcpy(g_nid.szTip, "Clipboard Paster");                           // Tooltip text
+    g_nid.uCallbackMessage = WM_MY_TRAY_MESSAGE;                        // Custom message for tray interactions
 
     if (!Shell_NotifyIcon(NIM_ADD, &g_nid)) {
         MessageBox(nullptr, "Failed to add icon to system tray!", "Error", MB_ICONERROR);
@@ -126,7 +127,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 
         case WM_MY_TRAY_MESSAGE: {
             switch (LOWORD(lParam)) {
-                // Right-click on tray icon: e.g., show context menu
+                // Right-click on tray icon:
                 case WM_RBUTTONUP: {
                     POINT pt;
                     GetCursorPos(&pt);
@@ -152,7 +153,6 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 
                     switch (clicked) {
                         case 1: { // Settings
-                            //MessageBox(hwnd, "Settings selected!", "Menu", MB_OK);
                             ShowSettingsDialog(hwnd);
                             break;
                         }
@@ -180,12 +180,27 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 
 INT_PTR CALLBACK SettingsDlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam) {
     switch (message) {
-    case WM_INITDIALOG:
-        // Initialize controls here if needed
+    case WM_INITDIALOG: {
+        // Set initial values in the edit controls
+        SetDlgItemInt(hDlg, IDC_EDIT_INITIAL_DELAY, g_settings.initialDelayMs, FALSE);
+        SetDlgItemInt(hDlg, IDC_EDIT_KEY_DELAY, g_settings.keyPressDelayMs, FALSE);
         return TRUE;
+    }
     case WM_COMMAND:
         switch (LOWORD(wParam)) {
-        case IDOK:
+        case IDOK: {
+            BOOL ok1 = FALSE, ok2 = FALSE;
+            int initialDelay = GetDlgItemInt(hDlg, IDC_EDIT_INITIAL_DELAY, &ok1, FALSE);
+            int keyDelay = GetDlgItemInt(hDlg, IDC_EDIT_KEY_DELAY, &ok2, FALSE);
+
+            // Simple validation: only update if both are valid and positive
+            if (ok1 && ok2 && initialDelay >= 0 && keyDelay >= 0) {
+                g_settings.initialDelayMs = initialDelay;
+                g_settings.keyPressDelayMs = keyDelay;
+            }
+            EndDialog(hDlg, LOWORD(wParam));
+            return TRUE;
+        }
         case IDCANCEL:
             EndDialog(hDlg, LOWORD(wParam));
             return TRUE;
