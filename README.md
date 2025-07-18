@@ -19,6 +19,7 @@ These tools are Windows-specific as they utilise WIN32 API calls for simulating 
 - Bypasses "no-paste" restrictions in various applications.
 #### Limitations:
 - Many UNICODE characters do not work.
+- Spacing may not be preserved depending on application and clipboard content.
 
 ### `type-at-wpm` (Experimental):
 Controlled typing speed based on WPM.

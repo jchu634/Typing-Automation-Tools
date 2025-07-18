@@ -40,6 +40,9 @@
 # debug information files
 *.dwo
 
+# Built files
+*.zip
+
 /out
 /.vs
 /lib/out
