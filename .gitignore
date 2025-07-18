@@ -42,3 +42,5 @@
 
 /out
 /.vs
+/lib/out
+/lib/.vs
