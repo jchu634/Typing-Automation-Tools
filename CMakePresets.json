@@ -38,26 +38,6 @@
       }
     },
     {
-      "name": "x86-debug",
-      "displayName": "x86 Debug",
-      "inherits": "windows-base",
-      "architecture": {
-        "value": "x86",
-        "strategy": "external"
-      },
-      "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Debug"
-      }
-    },
-    {
-      "name": "x86-release",
-      "displayName": "x86 Release",
-      "inherits": "x86-debug",
-      "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Release"
-      }
-    },
-    {
       "name": "linux-debug",
       "displayName": "Linux Debug",
       "generator": "Ninja",
@@ -109,18 +89,6 @@
       "name": "x64-debug",
       "displayName": "x64 Debug Build",
       "configurePreset": "x64-debug",
-      "configuration": "Debug"
-    },
-    {
-      "name": "x86-release",
-      "displayName": "x86 Release Build",
-      "configurePreset": "x86-release",
-      "configuration": "Release"
-    },
-    {
-      "name": "x86-debug",
-      "displayName": "x86 Debug Build",
-      "configurePreset": "x86-debug",
       "configuration": "Debug"
     },
     {

@@ -3,6 +3,7 @@
 ### Overview
 This repository contains two tools designed to automate typing tasks, particularly useful for scenarios where standard pasting functionality is unavailable or inconvenient.
 - `type-clipboard`: Automatically types the current content of your clipboard, ideal for applications that don't support traditional pasting (e.g., some remote desktops, virtual machines, or older applications).
+	- Activate using the hotkey `WIN + F6.
 - `type-at-wpm`: Types out given text at a specified Words Per Minute (WPM).
 
 ### Platform Compatibility

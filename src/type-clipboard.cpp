@@ -1,5 +1,5 @@
 ﻿#include <windows.h>
-#include <shellapi.h> // Required for Shell_NotifyIcon
+#include <shellapi.h>     // Required for Shell_NotifyIcon
 #include <string>         // For std::string
 #include <thread>         // For std::this_thread::sleep_for
 #include <chrono>         // For std::chrono::milliseconds
@@ -42,6 +42,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     wc.lpszClassName = CLASS_NAME;
     wc.hCursor = LoadCursor(nullptr, IDC_ARROW);    // Small invisible cursor
     wc.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);  // No visible background
+   
 
     RegisterClassEx(&wc);
 
@@ -57,6 +58,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         hInstance,              // Instance handle
         nullptr                 // Additional application data
     );
+
 
     if (g_hWnd == nullptr) {
         MessageBox(nullptr, "Window Creation Failed!", "Error", MB_ICONERROR);

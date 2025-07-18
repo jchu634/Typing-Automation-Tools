@@ -14,7 +14,7 @@ project ("Typing Automation Tools")
 # Build key_sim_lib as a shared library (DLL)
 add_library(key_sim_lib SHARED
     "${CMAKE_CURRENT_SOURCE_DIR}/src/key_sim_lib.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/include/key_sim_lib.h"
+    # "${CMAKE_CURRENT_SOURCE_DIR}/include/key_sim_lib.h"
 )
 target_include_directories(key_sim_lib PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include")
 
@@ -24,7 +24,6 @@ target_compile_definitions(key_sim_lib PRIVATE KEY_SIM_EXPORTS)
 # Type-at-wpm executable
 add_executable("type-at-wpm"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/type-at-wpm.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/include/type-at-wpm.h"
 )
 target_link_libraries("type-at-wpm" PRIVATE key_sim_lib)
 
@@ -32,9 +31,10 @@ target_link_libraries("type-at-wpm" PRIVATE key_sim_lib)
 add_executable("type-clipboard" WIN32
     "${CMAKE_CURRENT_SOURCE_DIR}/src/type-clipboard.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/resources/resources.rc"
-    "${CMAKE_CURRENT_SOURCE_DIR}/resources/resource.h"
+    # "${CMAKE_CURRENT_SOURCE_DIR}/resources/resource.h"
 )
 target_link_libraries("type-clipboard" PRIVATE key_sim_lib)
+target_include_directories("type-clipboard" PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/resources")
 
 # Set C++20 for all targets
 if (CMAKE_VERSION VERSION_GREATER 3.12)

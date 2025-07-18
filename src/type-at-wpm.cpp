@@ -1,12 +1,15 @@
-﻿#include <windows.h>
-#include <string>
-#include <thread>
-#include <chrono>
-#include <iostream>
-#include "key_sim_lib.h";
-#include <vector>   // For std::vector
-#include <algorithm> // For std::find_if
-#include <stdexcept> // For std::runtime_error
+﻿#include <windows.h>      // Required for Windows API functions
+#include <shellapi.h>     // Required for Shell_NotifyIcon
+#include <string>         // For std::string
+#include <thread>         // For std::this_thread::sleep_for
+#include <chrono>         // For std::chrono::milliseconds
+#include <iostream>       // For console output (can be removed for true background app)
+#include <sstream>        // For std::stringstream (word counting)
+#include <iterator>       // For std::istream_iterator (word counting)
+#include <algorithm>      // For std::distance (word counting)
+#include <stdexcept>      // For std::runtime_error (though not used in this version)
+#include "key_sim_lib.h"
+
 
 
 // --- Command-Line Parsing and Application Logic ---
