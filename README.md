@@ -15,13 +15,15 @@ These tools are Windows-specific as they utilise WIN32 API calls for simulating 
 
 ## Features + Limitations:	
 ### `type-clipboard`:
-- Types out clipboard content, instead of pasting it.
-- Bypasses "no-paste" restrictions in various applications.
+Types out clipboard content, instead of pasting it, built as a workaround for lack of clipboard support in many web IPMIs and similar environments.
+- May also bypass some "no-paste" restrictions in applications.
 #### Limitations:
-- Many UNICODE characters do not work.
 - Spacing may not be preserved depending on application and clipboard content.
 
-### `type-at-wpm` (Experimental):
-Controlled typing speed based on WPM.
+### `type-at-wpm`:
+Controlled typing speed based on WPM.\
+Built as a tool to debug an application which broke at a high but human typing speed, which was too annoying to reproduce manually.
+
 #### Limitations: 
-- May not be able to perfectly match WPM.
+- The WPM is converted to a keystroke delay, which is not representative of actual typing speed.
+- The keystroke delay is most likely not representative. (A calibration site is provided to give a quick check).
