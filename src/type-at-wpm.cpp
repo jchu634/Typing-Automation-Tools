@@ -39,9 +39,9 @@ int main(int argc, wchar_t* argv[]) {
     std::wstring appName = (argc > 0) ? argv[0] : L"type-at-wpm";
 
     // Default values
-    int initialDelayMs = {5000};    // 5 seconds
-    int keyPressDelayMs = { 20 };   // 20 ms per key
-	int wpm = { 50 };               // Default WPM
+	int initialDelayMs = { 5000 };      // Startup delay
+    int keyPressDelayMs = { 0 };        // Will be set by WPM calculations
+	int wpm = { 120 };                  
     std::wstring textToType = L"";
 
     // Parse command-line arguments
@@ -116,9 +116,9 @@ int main(int argc, wchar_t* argv[]) {
     }
 
 	keyPressDelayMs = countWordsInString(textToType) > 0 ? 60000 / (countWordsInString(textToType) * wpm) : 20;
-
+	//std::cout << "Words in text: " << countWordsInString(textToType) << std::endl;
     std::wcout << L"Starting key press simulation for: \"" << textToType << L"\"" << std::endl;
-    std::cout << "Initial delay: " << initialDelayMs << "ms, Key delay: " << keyPressDelayMs << "ms" << std::endl;
+    std::cout << "Initial delay: " << initialDelayMs << "ms, WPM:" << wpm << ", Calculated Key delay : " << keyPressDelayMs << "ms" << std::endl;
     std::cout << "Switch to a text editor or a field where you want the text to be typed NOW." << std::endl;
 
     if (initialDelayMs > 0) {
