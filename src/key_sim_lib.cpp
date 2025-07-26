@@ -43,4 +43,19 @@ extern "C" {
         }
         return 0; // Success
     }
+    KEY_SIM_API std::wstring fetchClipboardContents() {
+        std::wstring clipboardTextString = { L" " };
+        if (OpenClipboard(NULL)) {
+            HANDLE hData = GetClipboardData(CF_UNICODETEXT);
+            if (hData != NULL) {
+                wchar_t* clipboardText = static_cast<wchar_t*>(GlobalLock(hData));
+                if (clipboardText) {
+                    clipboardTextString = clipboardText;
+                    GlobalUnlock(hData);
+                }
+            }
+            CloseClipboard();
+        }
+        return clipboardTextString;
+    }
 }

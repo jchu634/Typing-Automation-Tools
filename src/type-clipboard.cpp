@@ -27,7 +27,6 @@ AppSettings g_settings; // Global settings instance
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 INT_PTR CALLBACK SettingsDlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam);
 void ShowSettingsDialog(HWND hParent);
-std::wstring fetchClipboardContents();
 
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
@@ -219,20 +218,4 @@ void ShowSettingsDialog(HWND hParent) {
         SettingsDlgProc,
         0
     );
-}
-
-std::wstring fetchClipboardContents() {
-    std::wstring clipboardTextString = { L" " };
-    if (OpenClipboard(NULL)) {
-        HANDLE hData = GetClipboardData(CF_UNICODETEXT);
-        if (hData != NULL) {
-            wchar_t* clipboardText = static_cast<wchar_t*>(GlobalLock(hData));
-            if (clipboardText) {
-                clipboardTextString = clipboardText;
-                GlobalUnlock(hData);
-            }
-        }
-        CloseClipboard();
-    }
-    return clipboardTextString;
 }

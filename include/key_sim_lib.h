@@ -22,6 +22,7 @@ extern "C" {
      * @return 0 on success, non-zero on error.
      */
     KEY_SIM_API int simulateTyping(const std::wstring& text, int& key_delay_ms);
+    KEY_SIM_API std::wstring fetchClipboardContents();
 }
 
 #endif // KEY_SIM_LIB_H
