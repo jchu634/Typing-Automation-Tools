@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Typing Delay Counter</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background-color: #f4f4f4;
+            margin: 0;
+        }
+
+        #container {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            width: 80%;
+            max-width: 600px;
+            text-align: center;
+        }
+
+        textarea {
+            width: calc(100% - 20px);
+            height: 150px;
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1.2em;
+            resize: vertical;
+        }
+
+        .results-section {
+            margin-top: 15px;
+            font-size: 1.2em;
+            color: #333;
+        }
+
+        .results-section span {
+            font-weight: bold;
+            color: #007bff;             
+        }
+        #instructions {
+            margin-bottom: 15px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <h1>Typing Delay Counter</h1>
+        <p id="instructions">Type in the box below to measure delays between keystrokes.</p>
+        <textarea id="typingArea" placeholder="Start typing here..."></textarea>
+        <div class="results-section" id="avgDelayResults">Average Delay: <span>0</span> ms</div>
+        <div class="results-section" id="maxDelayResults">Highest Delay: <span>0</span> ms</div>
+        <div class="results-section" id="minDelayResults">Lowest Delay: <span>0</span> ms</div>
+    </div>
+
+    <script>
+        const typingArea = document.getElementById('typingArea');
+        const avgDelayResultsDiv = document.getElementById('avgDelayResults');
+        const maxDelayResultsDiv = document.getElementById('maxDelayResults');
+        const minDelayResultsDiv = document.getElementById('minDelayResults');
+
+        let lastCharTime = null;
+        let delayTimes = []; // To store delays between characters
+        let firstCharTyped = false; // Flag to track if the first character has been typed
+
+        typingArea.addEventListener('input', () => {
+            const currentTime = new Date().getTime();
+
+            // Don't count delays until after the first character has been typed
+            if (typingArea.value.length === 1 && !firstCharTyped) {
+                lastCharTime = currentTime;
+                firstCharTyped = true;
+                return;
+            }
+
+            if (firstCharTyped && lastCharTime !== null) {
+                const delay = currentTime - lastCharTime;
+                delayTimes.push(delay);
+
+                // AVG
+                const totalDelay = delayTimes.reduce((sum, d) => sum + d, 0);
+                const averageDelay = delayTimes.length > 0 ? Math.round(totalDelay / delayTimes.length) : 0;
+                avgDelayResultsDiv.innerHTML = `Average Delay: <span>${averageDelay}</span> ms`;
+
+                // High + Low
+                const highestDelay = delayTimes.length > 0 ? Math.max(...delayTimes) : 0;
+                const lowestDelay = delayTimes.length > 0 ? Math.min(...delayTimes) : 0;
+                maxDelayResultsDiv.innerHTML = `Highest Delay: <span>${highestDelay}</span> ms`;
+                minDelayResultsDiv.innerHTML = `Lowest Delay: <span>${lowestDelay}</span> ms`;
+            }
+
+            if (typingArea.value.length > 0) {
+                lastCharTime = currentTime;
+            } else { // If the text area becomes empty after typing, reset lastCharTime
+                lastCharTime = null;
+                firstCharTyped = false;
+            }
+        });
+
+        // Reset on clearing the text area (using keyup for more reliable full clear detection)
+        typingArea.addEventListener('keyup', (event) => {
+            if (typingArea.value === '') {
+                lastCharTime = null;
+                delayTimes = []; // Clear delays on reset
+                firstCharTyped = false; // Reset flag
+
+                avgDelayResultsDiv.innerHTML = 'Average Delay: <span>0</span> ms';
+                maxDelayResultsDiv.innerHTML = 'Highest Delay: <span>0</span> ms';
+                minDelayResultsDiv.innerHTML = 'Lowest Delay: <span>0</span> ms';
+            }
+        });
+    </script>
+</body>
+</html>
