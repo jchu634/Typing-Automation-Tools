@@ -21,7 +21,7 @@ extern "C" {
      * @param key_delay_ms Delay in milliseconds between each key press.
      * @return 0 on success, non-zero on error.
      */
-    KEY_SIM_API int simulateTyping(const std::string text, int key_delay_ms);
+    KEY_SIM_API int simulateTyping(const std::wstring& text, int& key_delay_ms);
 }
 
 #endif // KEY_SIM_LIB_H

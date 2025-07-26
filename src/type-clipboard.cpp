@@ -27,8 +27,7 @@ AppSettings g_settings; // Global settings instance
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 INT_PTR CALLBACK SettingsDlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam);
 void ShowSettingsDialog(HWND hParent);
-std::string fetchClipboardContents();
-int countWordsInString(std::string const& str);
+std::wstring fetchClipboardContents();
 
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
@@ -90,7 +89,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         return 1;
     }
 
-    std::string textToType = " ";
+    std::wstring textToType = L"";
 
     // Message loop
     MSG msg = {};
@@ -100,12 +99,12 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
             textToType = fetchClipboardContents();
             if (!textToType.empty()) {
 
-                std::cout << textToType << std::endl;
+                std::wcout << textToType << std::endl;
 
                 // Delay required: otherwise beginning of string is often clipped 
                 std::this_thread::sleep_for(std::chrono::milliseconds(g_settings.initialDelayMs));
                 simulateTyping(textToType, g_settings.keyPressDelayMs);
-                std::cout << "Text typed" << std::endl;
+                std::wcout << L"Text typed" << std::endl;
             }
         }
         TranslateMessage(&msg);
@@ -222,18 +221,12 @@ void ShowSettingsDialog(HWND hParent) {
     );
 }
 
-int countWordsInString(std::string const& str)
-{
-    std::stringstream stream(str);
-    return std::distance(std::istream_iterator<std::string>(stream), std::istream_iterator<std::string>());
-}
-
-std::string fetchClipboardContents() {
-    std::string clipboardTextString = " ";
+std::wstring fetchClipboardContents() {
+    std::wstring clipboardTextString = { L" " };
     if (OpenClipboard(NULL)) {
-        HANDLE hData = GetClipboardData(CF_TEXT);
+        HANDLE hData = GetClipboardData(CF_UNICODETEXT);
         if (hData != NULL) {
-            char* clipboardText = static_cast<char*>(GlobalLock(hData));
+            wchar_t* clipboardText = static_cast<wchar_t*>(GlobalLock(hData));
             if (clipboardText) {
                 clipboardTextString = clipboardText;
                 GlobalUnlock(hData);
